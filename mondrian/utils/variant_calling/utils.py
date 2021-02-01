@@ -174,6 +174,21 @@ def update_maf_counts(input_maf, counts_file, output_maf):
             outfile.write(line)
 
 
+def concatenate_csv(inputs, output):
+
+    header = open(inputs[0]).readline()
+
+    with open(output, 'wt') as outfile:
+        outfile.write(header)
+        for inputfile in inputs:
+            with open(inputfile, 'rt') as infile:
+                for line in infile:
+                    if line.startswith('chrom'):
+                        continue
+                    outfile.write(infile)
+
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
@@ -263,6 +278,11 @@ def parse_args():
     update_maf_id.add_argument('--counts', required=True)
     update_maf_id.add_argument('--output', required=True)
 
+    concat_csv_parser = subparsers.add_parser('concat_csv')
+    concat_csv_parser.set_defaults(which='concat_csv')
+    concat_csv_parser.add_argument('--inputs', nargs='*', required=True)
+    concat_csv_parser.add_argument('--output', required=True)
+
     args = vars(parser.parse_args())
 
     return args
@@ -285,6 +305,8 @@ def utils():
         update_maf_ids(args['input'], args['output'], args['tumour_id'], args['normal_id'])
     elif args['which'] == 'update_maf_counts':
         update_maf_counts(args['input'], args['counts'], args['output'])
+    elif args['which'] == 'concat_csv':
+        concatenate_csv(args['inputs'], args['output'])
     elif args['which'] == 'consensus':
         consensus.main(
             args['museq_vcf'], args['strelka_snv'], args['mutect_vcf'], args['strelka_indel'],

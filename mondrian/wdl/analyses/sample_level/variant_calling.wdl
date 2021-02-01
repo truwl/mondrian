@@ -77,17 +77,9 @@ workflow SampleVariantWorkflow {
             chromosomes = chromosomes
     }
 
-    call vcf2maf.Vcf2mafWorkflow as vcf2maf{
-        input:
-            input_vcf = consensus.consensus_output,
-            input_counts =  consensus.counts_output,
-            normal_id = normal_id,
-            tumour_id = tumour_id,
-            reference = vep_ref
-    }
-
     output{
-        File maf_output = vcf2maf.output_maf
+        File vcf_output = consensus.consensus_output
+        File counts_output = consensus.counts_output
     }
 
 }

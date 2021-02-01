@@ -1,7 +1,9 @@
 version development
 
 import "sample_level/variant_calling.wdl" as variant_calling
-import "../tasks/variant_calling/vcf2maf.wdl"  as vcf2maf
+import "../tasks/io/vcf/bcftools.wdl" as bcftools
+import "../tasks/io/csverve/csverve.wdl" as csverve
+import "../workflows/variant_calling/vcf2maf.wdl" as vcf2maf
 
 workflow VariantWorkflow{
     input{
@@ -42,9 +44,23 @@ workflow VariantWorkflow{
         }
     }
 
-    call vcf2maf.MergeMafs as merge_mafs{
+    call bcftools.mergeVcf as merge_vcf{
         input:
-            input_mafs = variant_workflow.maf_output,
+            vcf_files = variant_workflow.vcf_output
+    }
+
+    call csverve.concatenate_csv as concat_csv{
+        input:
+            inputfile = variant_workflow.counts_output,
+    }
+
+    call vcf2maf.Vcf2mafWorkflow as vcf2maf{
+        input:
+            input_vcf = merge_vcf.merged_vcf,
+            input_counts =  concat_csv.outfile,
+            normal_id = normal_id,
+            tumour_id = tumour_id,
+            reference = vep_ref
     }
 
 }
